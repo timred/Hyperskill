@@ -20,5 +20,15 @@ def match(regex, string):
     return False
 
 
+def variable(regex, char):
+    if match(regex, char):
+        return True
+    elif len(regex) < len(char):
+        return variable(regex, char[1:])
+    else:
+        return False
+
+
+
 r, c = input().split("|")
-print(match(r, c))
+print(variable(r, c))
