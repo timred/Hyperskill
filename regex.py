@@ -12,6 +12,9 @@ def match(regex, string):
     if not regex:
         return True
 
+    if not string and regex == "$":
+        return True
+
     if not string:
         return False
 
@@ -21,9 +24,14 @@ def match(regex, string):
 
 
 def variable(regex, char):
-    if match(regex, char):
+    if not regex:
         return True
-    elif len(regex) < len(char):
+
+    if regex[0] == "^":
+        return match(regex[1:], char)
+    elif regex[0] != "^" and match(regex, char):
+        return True
+    elif len(regex) <= len(char):
         return variable(regex, char[1:])
     else:
         return False
