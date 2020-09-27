@@ -11,25 +11,39 @@ class CoffeeMachine:
         "cappuccino": {"water": 200, "milk": 100, "beans": 12, "cost": 6},
     }
 
-    def action(self):
-        action = input("Write action (buy, fill, take, remaining, exit): ")
-        if action == "buy":
-            selection = input("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu: ")
-            options = {1: "espresso", 2: "latte", 3: "cappuccino"}
-            if selection == "back":
+    def __init__(self):
+        self.state = None
+        self.start()
+
+    def start(self):
+        print("Write action (buy, fill, take, remaining, exit): ")
+        self.state = "choosing an action"
+
+    def action(self, request):
+        if self.state == "choosing an action":
+            if request == "buy":
+                self.state = "choosing a type of coffee"
+                print("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu: ")
                 return 1
-            selection = int(selection)
+            elif request == "fill":
+                self.fill_stock()
+            elif request == "take":
+                self.take_money()
+            elif request == "remaining":
+                self.get_stock()
+            elif request == "exit":
+                return 0
+
+        if self.state == "choosing a type of coffee":
+            options = {1: "espresso", 2: "latte", 3: "cappuccino"}
+            if request == "back":
+                self.start()
+                return 1
+            selection = int(request)
             if self.check_stock(options[selection]):
                 print("I have enough resources, making you a coffee!")
                 self.make_coffee(options[selection])
-        elif action == "fill":
-            self.fill_stock()
-        elif action == "take":
-            self.take_money()
-        elif action == "remaining":
-            self.get_stock()
-        elif action == "exit":
-            return 0
+        self.start()
 
     def get_stock(self):
         print("The coffee machine has:")
@@ -74,7 +88,8 @@ class CoffeeMachine:
 
 my_coffee_machine = CoffeeMachine()
 while True:
-    output = my_coffee_machine.action()
+    user_request = input()
+    output = my_coffee_machine.action(user_request)
     if output == 0:
         break
     if output == 1:
