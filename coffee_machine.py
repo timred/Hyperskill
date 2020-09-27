@@ -1,7 +1,21 @@
-print("Starting to make a coffee")
-print("Grinding coffee beans")
-print("Boiling water")
-print("Mixing boiled water with crushed coffee beans")
-print("Pouring coffee into the cup")
-print("Pouring some milk into the cup")
-print("Coffee is ready!")
+def get_water(cups):
+    return 200 * cups
+
+
+def get_milk(cups):
+    return 50 * cups
+
+
+def get_beans(cups):
+    return 15 * cups
+
+
+def make_coffee():
+    cups_required = int(input("Write how many cups of coffee you will need: "))
+    print(f"For {cups_required} cups of coffee you will need:")
+    print(f"{get_water(cups_required)} ml of water")
+    print(f"{get_milk(cups_required)} ml of milk")
+    print(f"{get_beans(cups_required)} g of coffee beans")
+
+
+make_coffee()

@@ -1,3 +1,4 @@
 # CoffeeMachine
 Coffee Machine project from JetBrains Academy 
 - Stage 1: Text output of the Coffee Making process
+- Stage 2: Calculate the amount of ingredients for a set number of cups
