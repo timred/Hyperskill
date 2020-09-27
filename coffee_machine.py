@@ -12,15 +12,24 @@ class CoffeeMachine:
     }
 
     def action(self):
-        action = input("Write action (buy, fill, take): ")
+        action = input("Write action (buy, fill, take, remaining, exit): ")
         if action == "buy":
-            selection = int(input("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: "))
+            selection = input("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu: ")
             options = {1: "espresso", 2: "latte", 3: "cappuccino"}
-            self.make_coffee(options[selection])
+            if selection == "back":
+                return 1
+            selection = int(selection)
+            if self.check_stock(options[selection]):
+                print("I have enough resources, making you a coffee!")
+                self.make_coffee(options[selection])
         elif action == "fill":
             self.fill_stock()
         elif action == "take":
             self.take_money()
+        elif action == "remaining":
+            self.get_stock()
+        elif action == "exit":
+            return 0
 
     def get_stock(self):
         print("The coffee machine has:")
@@ -28,7 +37,7 @@ class CoffeeMachine:
         print(f"{self.milk} of milk")
         print(f"{self.beans} of coffee beans")
         print(f"{self.cups} of disposable cups")
-        print(f"{self.money} of money")
+        print(f"${self.money} of money")
 
     def fill_stock(self):
         self.water += int(input("Write how many ml of water do you want to add: "))
@@ -47,8 +56,26 @@ class CoffeeMachine:
         self.cups -= 1
         self.money += self.products[product]["cost"]
 
+    def check_stock(self, product):
+        if self.water < self.products[product]["water"]:
+            print("Sorry, not enough water!")
+            return False
+        if self.milk < self.products[product]["milk"]:
+            print("Sorry, not enough milk!")
+            return False
+        if self.beans < self.products[product]["beans"]:
+            print("Sorry, not enough coffee beans!")
+            return False
+        if self.cups < 1:
+            print("Sorry, not enough cups!")
+            return False
+        return True
+
 
 my_coffee_machine = CoffeeMachine()
-my_coffee_machine.get_stock()
-my_coffee_machine.action()
-my_coffee_machine.get_stock()
+while True:
+    output = my_coffee_machine.action()
+    if output == 0:
+        break
+    if output == 1:
+        continue
