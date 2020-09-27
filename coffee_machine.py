@@ -1,35 +1,54 @@
-def get_water(cups):
-    return 200 * cups
-
-
-def get_milk(cups):
-    return 50 * cups
-
-
-def get_beans(cups):
-    return 15 * cups
-
-
 class CoffeeMachine:
-    def __init__(self):
-        self.water = int(input("Write how many ml of water the coffee machine has: "))
-        self.milk = int(input("Write how many ml of milk the coffee machine has: "))
-        self.beans = int(input("Write how many grams of coffee beans the coffee machine has: "))
+    money = 550
+    water = 400
+    milk = 540
+    beans = 120
+    cups = 9
+
+    products = {
+        "espresso": {"water": 250, "milk": 0, "beans": 16, "cost": 4},
+        "latte": {"water": 350, "milk": 75, "beans": 20, "cost": 7},
+        "cappuccino": {"water": 200, "milk": 100, "beans": 12, "cost": 6},
+    }
+
+    def action(self):
+        action = input("Write action (buy, fill, take): ")
+        if action == "buy":
+            selection = int(input("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: "))
+            options = {1: "espresso", 2: "latte", 3: "cappuccino"}
+            self.make_coffee(options[selection])
+        elif action == "fill":
+            self.fill_stock()
+        elif action == "take":
+            self.take_money()
 
     def get_stock(self):
-        return min(self.water // 200, self.milk // 50, self.beans // 15)
+        print("The coffee machine has:")
+        print(f"{self.water} of water")
+        print(f"{self.milk} of milk")
+        print(f"{self.beans} of coffee beans")
+        print(f"{self.cups} of disposable cups")
+        print(f"{self.money} of money")
 
-    def make_coffee(self, cups):
-        stock = self.get_stock()
-        if stock == cups:
-            print("Yes, I can make that amount of coffee")
-        elif stock > cups:
-            print(f"Yes, I can make that amount of coffee (and even {stock - cups} more than that)")
-        else:
-            print(f"No, I can make only {self.get_stock()} cups of coffee")
+    def fill_stock(self):
+        self.water += int(input("Write how many ml of water do you want to add: "))
+        self.milk += int(input("Write how many ml of milk do you want to add: "))
+        self.beans += int(input("Write how many grams of coffee beans do you want to add: "))
+        self.cups += int(input("Write how many disposable cups of coffee do you want to add: "))
+
+    def take_money(self):
+        print(f"I gave you ${self.money}")
+        self.money = 0
+
+    def make_coffee(self, product):
+        self.water -= self.products[product]["water"]
+        self.milk -= self.products[product]["milk"]
+        self.beans -= self.products[product]["beans"]
+        self.cups -= 1
+        self.money += self.products[product]["cost"]
 
 
 my_coffee_machine = CoffeeMachine()
-
-cups_required = int(input("Write how many cups of coffee you will need: "))
-my_coffee_machine.make_coffee(cups_required)
+my_coffee_machine.get_stock()
+my_coffee_machine.action()
+my_coffee_machine.get_stock()
