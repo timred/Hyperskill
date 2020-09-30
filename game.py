@@ -1,3 +1,5 @@
+import random
+
 rules = {
     "rock": {
         "wins_against": "scissors",
@@ -18,6 +20,30 @@ def pick_win(opponent):
     return rules[opponent]["loses_against"]
 
 
-user = input()
-computer = pick_win(user)
-print(f"Sorry, but the computer chose {computer}")
+def winner(player, computer):
+    if player == computer:
+        return "draw"
+    elif rules[player]["wins_against"] == computer:
+        return "player"
+    elif rules[player]["loses_against"] == computer:
+        return "computer"
+    else:
+        return "unknown"
+
+
+def play():
+    player = input()
+    computer = random.choice(list(rules.keys()))
+
+    outcome = winner(player, computer)
+    if outcome == "draw":
+        print(f"There is a draw ({player})")
+    elif outcome == "player":
+        print(f"Well done. The computer chose {computer} and failed")
+    elif outcome == "computer":
+        print(f"Sorry, but the computer chose {computer}")
+    else:
+        print(f"Something has gone wrong :(")
+
+
+play()
