@@ -32,18 +32,27 @@ def winner(player, computer):
 
 
 def play():
-    player = input()
-    computer = random.choice(list(rules.keys()))
+    while True:
+        player = input()
+        computer = random.choice(list(rules.keys()))
 
-    outcome = winner(player, computer)
-    if outcome == "draw":
-        print(f"There is a draw ({player})")
-    elif outcome == "player":
-        print(f"Well done. The computer chose {computer} and failed")
-    elif outcome == "computer":
-        print(f"Sorry, but the computer chose {computer}")
-    else:
-        print(f"Something has gone wrong :(")
+        if player == "!exit":
+            break
+
+        if player not in ["rock", "paper", "scissors"]:
+            print("Invalid input")
+            continue
+
+        outcome = winner(player, computer)
+        if outcome == "draw":
+            print(f"There is a draw ({player})")
+        elif outcome == "player":
+            print(f"Well done. The computer chose {computer} and failed")
+        elif outcome == "computer":
+            print(f"Sorry, but the computer chose {computer}")
+        else:
+            print(f"Something has gone wrong :(")
 
 
 play()
+print("Bye!")
