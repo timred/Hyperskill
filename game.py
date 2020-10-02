@@ -16,6 +16,16 @@ rules = {
 }
 
 
+def get_rating(name):
+    ratings = open("rating.txt")
+    for player in ratings:
+        player_name = player.split()[0]
+        player_score = player.split()[1]
+        if player_name == name:
+            return int(player_score)
+    return 0
+
+
 def pick_win(opponent):
     return rules[opponent]["loses_against"]
 
@@ -32,23 +42,34 @@ def winner(player, computer):
 
 
 def play():
+    player_name = input("Enter your name: ")
+    player_score = get_rating(player_name)
+    print(f"Hello, {player_name}")
+
     while True:
-        player = input()
+        player_input = input()
         computer = random.choice(list(rules.keys()))
 
-        if player == "!exit":
+        if player_input == "!exit":
             break
 
-        if player not in ["rock", "paper", "scissors"]:
+        if player_input == "!rating":
+            print(f"Your rating: {player_score}")
+            continue
+
+        if player_input not in ["rock", "paper", "scissors"]:
             print("Invalid input")
             continue
 
-        outcome = winner(player, computer)
+        outcome = winner(player_input, computer)
         if outcome == "draw":
-            print(f"There is a draw ({player})")
+            player_score += 50
+            print(f"There is a draw ({player_input})")
         elif outcome == "player":
+            player_score += 100
             print(f"Well done. The computer chose {computer} and failed")
         elif outcome == "computer":
+            player_score += 0
             print(f"Sorry, but the computer chose {computer}")
         else:
             print(f"Something has gone wrong :(")
