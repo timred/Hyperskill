@@ -1,19 +1,15 @@
 import random
 
-rules = {
-    "rock": {
-        "wins_against": "scissors",
-        "loses_against": "paper"
-    },
-    "paper": {
-        "wins_against": "rock",
-        "loses_against": "scissors"
-    },
-    "scissors": {
-        "wins_against": "paper",
-        "loses_against": "rock"
-    }
-}
+rules = dict()
+
+
+def set_rules(options):
+    for option in options:
+        after = [options[i] for i in range(options.index(option) + 1, len(options))]
+        before = [options[i] for i in range(0, options.index(option))]
+        remains = after + before
+        losers = [loser for loser in remains[len(remains) // 2:]]
+        rules[option] = losers
 
 
 def get_rating(name):
@@ -26,16 +22,12 @@ def get_rating(name):
     return 0
 
 
-def pick_win(opponent):
-    return rules[opponent]["loses_against"]
-
-
 def winner(player, computer):
     if player == computer:
         return "draw"
-    elif rules[player]["wins_against"] == computer:
+    elif computer in rules[player]:
         return "player"
-    elif rules[player]["loses_against"] == computer:
+    elif player in rules[computer]:
         return "computer"
     else:
         return "unknown"
@@ -45,6 +37,12 @@ def play():
     player_name = input("Enter your name: ")
     player_score = get_rating(player_name)
     print(f"Hello, {player_name}")
+
+    options = [option for option in input().split(",")]
+    if len(options) == 1:
+        options = ["rock", "paper", "scissors"]
+    set_rules(options)
+    print("Okay, let's start")
 
     while True:
         player_input = input()
@@ -57,7 +55,7 @@ def play():
             print(f"Your rating: {player_score}")
             continue
 
-        if player_input not in ["rock", "paper", "scissors"]:
+        if player_input not in options:
             print("Invalid input")
             continue
 
