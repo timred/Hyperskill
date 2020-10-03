@@ -54,24 +54,55 @@ def multiply(mat1, mat2):
     return c
 
 
-def scalar_multiply(c, mat):
+def scalar_multiply(const, mat):
     for n in range(mat.n):
         for m in range(mat.m):
-            mat.matrix[n][m] *= c
+            mat.matrix[n][m] *= const
     return 0
 
 
-def menu():
-    print("1. Add matrices")
-    print("2. Multiply matrix by a constant")
-    print("3. Multiply matrices")
-    print("0. Exit")
+def transpose(mat, choice=1):
+    if choice == 2:
+        matt = Matrix(mat.m, mat.n)
+        for m in range(mat.m - 1, -1, -1):
+            col = mat.get_col(m)[::-1]
+            matt.add_row(col)
+    elif choice == 3:
+        matt = Matrix(mat.n, mat.m)
+        for n in range(mat.n):
+            row = mat.matrix[n][::-1]
+            matt.add_row(row)
+    elif choice == 4:
+        matt = Matrix(mat.n, mat.m)
+        for n in range(mat.n - 1, -1, -1):
+            row = mat.matrix[n]
+            matt.add_row(row)
+    else:
+        matt = Matrix(mat.m, mat.n)
+        for m in range(mat.m):
+            col = mat.get_col(m)
+            matt.add_row(col)
+    return matt
+
+
+def menu(i):
+    if i == 0:
+        print("1. Add matrices")
+        print("2. Multiply matrix by a constant")
+        print("3. Multiply matrices")
+        print("4. Transpose matrix")
+        print("0. Exit")
+    if i == 1:
+        print("1. Main diagonal")
+        print("2. Side diagonal")
+        print("3. Vertical line")
+        print("4. Horizontal line")
+    return int(input("Your choice: "))
 
 
 def main():
     while True:
-        menu()
-        choice = int(input("Your choice: "))
+        choice = menu(0)
         if choice == 1 or choice == 3:
             n, m = input("Enter size of first matrix: ").split()
             a = Matrix(n, m)
@@ -100,6 +131,16 @@ def main():
 
             scalar_multiply(c, a)
             a.matrix_print()
+        elif choice == 4:
+            choice = menu(1)
+
+            n, m = input("Enter matrix size: ").split()
+            a = Matrix(n, m)
+            print("Enter matrix:")
+            a.fill_matrix()
+
+            at = transpose(a, choice)
+            at.matrix_print()
         elif choice == 0:
             break
 
