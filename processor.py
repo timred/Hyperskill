@@ -32,8 +32,14 @@ def add(mat1, mat2):
     return 0
 
 
+def scalar_multiply(c, mat):
+    for n in range(mat.n):
+        for m in range(mat.m):
+            mat.matrix[n][m] *= c
+    return 0
+
+
 a = Matrix()
-b = Matrix()
-return_value = add(a, b)
-if return_value == 0:
-    a.matrix_print()
+c = int(input())
+scalar_multiply(c, a)
+a.matrix_print()
