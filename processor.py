@@ -65,6 +65,7 @@ def transpose(mat, choice=1):
     if choice == 2:
         matt = Matrix(mat.m, mat.n)
         for m in range(mat.m - 1, -1, -1):
+
             col = mat.get_col(m)[::-1]
             matt.add_row(col)
     elif choice == 3:
@@ -85,12 +86,27 @@ def transpose(mat, choice=1):
     return matt
 
 
+def determinant(matrix):
+    if len(matrix) == 1:
+        return matrix[0][0]
+
+    if len(matrix) == 2:
+        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+    else:
+        total = 0
+        for i, e in enumerate(matrix[0]):
+            k = [x[:i] + x[i + 1:] for x in matrix[1:]]
+            total += (-1) ** (2 + i) * e * determinant(k)
+        return total
+
+
 def menu(i):
     if i == 0:
         print("1. Add matrices")
         print("2. Multiply matrix by a constant")
         print("3. Multiply matrices")
         print("4. Transpose matrix")
+        print("5. Calculate a determinant")
         print("0. Exit")
     if i == 1:
         print("1. Main diagonal")
@@ -141,6 +157,16 @@ def main():
 
             at = transpose(a, choice)
             at.matrix_print()
+        elif choice == 5:
+            n, m = input("Enter matrix size: ").split()
+            a = Matrix(n, m)
+            print("Enter matrix:")
+            a.fill_matrix()
+
+            det = determinant(a.matrix)
+            print("The result is:")
+            print(int(det) if det.is_integer() else det)
+
         elif choice == 0:
             break
 

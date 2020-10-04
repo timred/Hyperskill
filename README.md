@@ -4,3 +4,4 @@ Numeric Matrix Processor from JetBrains Academy
 - Stage 2: Scalar Multiplication
 - Stage 3: Matrix Multiplication
 - Stage 4: Matrix Transpose
+- Stage 5: Calculate the Determinant
