@@ -5,3 +5,4 @@ Numeric Matrix Processor from JetBrains Academy
 - Stage 3: Matrix Multiplication
 - Stage 4: Matrix Transpose
 - Stage 5: Calculate the Determinant
+- Stage 6: Inverse Matrix

@@ -86,6 +86,21 @@ def transpose(mat, choice=1):
     return matt
 
 
+def minor(matrix, i, j):
+    k = []
+    for n in range(len(matrix)):
+        if n == i:
+            continue
+        row = [x for x in matrix[n]]
+        row = row[:j] + row[j + 1:]
+        k.append(row)
+    return determinant(k)
+
+
+def cofactor(matrix, i, j):
+    return (-1) ** (i + j) * minor(matrix, i, j)
+
+
 def determinant(matrix):
     if len(matrix) == 1:
         return matrix[0][0]
@@ -100,6 +115,20 @@ def determinant(matrix):
         return total
 
 
+def inverse(mat):
+    cof_mat = Matrix(mat.n, mat.m)
+
+    for n in range(mat.n):
+        row = []
+        for m in range(mat.m):
+            row.append(cofactor(mat.matrix, n, m))
+        cof_mat.add_row(row)
+
+    cof_mat = transpose(cof_mat)
+    scalar_multiply((1 / determinant(mat.matrix)), cof_mat)
+    return cof_mat
+
+
 def menu(i):
     if i == 0:
         print("1. Add matrices")
@@ -107,6 +136,7 @@ def menu(i):
         print("3. Multiply matrices")
         print("4. Transpose matrix")
         print("5. Calculate a determinant")
+        print("6. Inverse matrix")
         print("0. Exit")
     if i == 1:
         print("1. Main diagonal")
@@ -166,7 +196,14 @@ def main():
             det = determinant(a.matrix)
             print("The result is:")
             print(int(det) if det.is_integer() else det)
+        elif choice == 6:
+            n, m = input("Enter matrix size: ").split()
+            a = Matrix(n, m)
+            print("Enter matrix:")
+            a.fill_matrix()
 
+            inv_mat = inverse(a)
+            inv_mat.matrix_print()
         elif choice == 0:
             break
 
