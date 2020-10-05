@@ -14,17 +14,18 @@ class Bank:
         self.cards[self.card_number] = self
 
     def new_account_id(self):
-        account_id = str(random.randint(0, 999999999))
-        account_id.zfill(9)
-        for card_number in self.cards.keys():
-            if self.cards[card_number].account_id == account_id:
-                self.new_account_id()
-        return account_id
+        while True:
+            account_id = str(random.randint(0, 999999999))
+            account_id = account_id.zfill(9)
+            for card_number in self.cards.keys():
+                if self.cards[card_number].account_id == account_id:
+                    continue
+            return account_id
 
 
 def new_pin():
     pin = str(random.randint(0, 9999))
-    pin.zfill(4)
+    pin = pin.zfill(4)
     return pin
 
 
