@@ -7,7 +7,7 @@ class Bank:
     def __init__(self):
         self.bank_id_number = '400000'
         self.account_id = self.new_account_id()
-        self.checksum = '7'
+        self.checksum = str(luhn(self.bank_id_number + self.account_id, validate=False))
         self.card_number = self.bank_id_number + self.account_id + self.checksum
         self.pin = new_pin()
         self.balance = 0
@@ -23,13 +23,29 @@ class Bank:
             return account_id
 
 
+def luhn(number, validate=True):
+    card_ints = [int(digit) for digit in number]
+    checksum = 0
+    if validate:
+        checksum = card_ints[-1]
+        card_ints = card_ints[:-1]
+    card_ints = [digit * 2 if index % 2 == 0 else digit for index, digit in enumerate(card_ints)]
+    card_ints = [digit - 9 if digit > 9 else digit for digit in card_ints]
+    if not validate:
+        return (10 - sum(card_ints) % 10) % 10
+    if (10 - sum(card_ints) % 10) % 10 == checksum:
+        return True
+    else:
+        return False
+
+
 def new_pin():
     pin = str(random.randint(0, 9999))
     pin = pin.zfill(4)
     return pin
 
 
-def valid_account(card_number, pin_number):
+def authenticate(card_number, pin_number):
     if card_number in Bank.cards and Bank.cards[card_number].pin == pin_number:
         return True
     else:
@@ -61,7 +77,7 @@ def main():
         elif choice == 2:
             card_number = input("Enter your card number:\n")
             pin_number = input("Enter you PIN:\n")
-            if valid_account(card_number, pin_number):
+            if authenticate(card_number, pin_number):
                 print("You have successfully logged in!")
                 card = Bank.cards[card_number]
                 while True:
