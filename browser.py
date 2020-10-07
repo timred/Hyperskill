@@ -1,3 +1,6 @@
+import os
+import sys
+import re
 
 nytimes_com = '''
 This New Liquid Is Magnetic, and Mesmerizing
@@ -34,15 +37,35 @@ Twitter and Square Chief Executive Officer Jack Dorsey
  Tuesday, a signal of the strong ties between the Silicon Valley giants.
 '''
 
-# write your code here
 if __name__ == "__main__":
+    save_dir = os.getcwd()
+    if len(sys.argv) > 1 and sys.argv[1]:
+        save_dir = sys.argv[1]
+    else:
+        save_dir = "default"
+    try:
+        os.mkdir(save_dir)
+    except FileExistsError:
+        pass
     while True:
         site = input()
         if site == "exit":
             break
-        site = site.replace(".", "_")
-        try:
-            print(globals()[site])
-        except KeyError:
-            continue
 
+        file_path = os.path.join(save_dir, site.split(".", 1)[0])
+        if re.match(r"^.+\.", site):
+            site = site.replace(".", "_")
+            try:
+                page = globals()[site]
+                print(page)
+                with open(file_path, "w") as file:
+                    file.write(page)
+            except KeyError:
+                print("Error: Page not found")
+                continue
+        elif site in os.listdir(save_dir):
+            with open(file_path, "r") as file:
+                print(file.read())
+        else:
+            print("Error: Incorrect URL")
+            continue
