@@ -10,7 +10,6 @@ def create_database():
         conn.commit()
     except sqlite3.OperationalError:
         pass
-
     cur.execute("create table if not exists card (id integer, number text, pin text, balance integer default 0)")
     conn.commit()
     conn.close()
@@ -58,6 +57,44 @@ def get_card(search):
     return card
 
 
+def set_balance(card, amount):
+    query = f"update card set balance = {amount} where number = '{card}'"
+    conn = sqlite3.connect("card.s3db")
+    c = conn.cursor()
+    c.execute(query)
+    conn.commit()
+    conn.close()
+
+
+def get_balance(card):
+    query = f"select balance from card where number = '{card}'"
+    conn = sqlite3.connect("card.s3db")
+    c = conn.cursor()
+    c.execute(query)
+    card = c.fetchone()
+    conn.close()
+    return card[0]
+
+
+def valid_card(search):
+    query = f"select number from card where number = {search} or id = {search}"
+    conn = sqlite3.connect("card.s3db")
+    c = conn.cursor()
+    c.execute(query)
+    card = c.fetchone()
+    conn.close()
+    return card
+
+
+def close_account(card_number):
+    query = f"delete from card where number = {card_number}"
+    conn = sqlite3.connect("card.s3db")
+    c = conn.cursor()
+    c.execute(query)
+    conn.commit()
+    conn.close()
+
+
 def luhn(number, validate=True):
     card_ints = [int(digit) for digit in number]
     checksum = 0
@@ -95,7 +132,10 @@ def menu(i):
         print("0. Exit")
     if i == 1:
         print("1. Balance")
-        print("2. Log out")
+        print("2. Add income")
+        print("3. Do transfer")
+        print("4. Close Account")
+        print("5. Log out")
         print("0. Exit")
 
 
@@ -115,13 +155,42 @@ def main():
             pin_number = input("Enter you PIN:\n")
             if authenticate(card_number, pin_number):
                 print("You have successfully logged in!")
-                card = get_card(card_number)
                 while True:
                     menu(1)
                     choice = int(input())
+                    card = get_card(card_number)
                     if choice == 1:
+                        card = get_card(card_number)
                         print(f"Balance: {card[2]}")
                     elif choice == 2:
+                        income = int(input("Enter income: "))
+                        new_balance = card[2] + income
+                        set_balance(card_number, new_balance)
+                        print("Income was added!")
+                    elif choice == 3:
+                        print("Transfer")
+                        dest_card = input("Enter card number: ")
+                        if not luhn(dest_card, validate=True):
+                            print("Probably you made a mistake in the card number. Please try again!")
+                            continue
+                        if valid_card(dest_card):
+                            amount = int(input("Enter how much money you want to transfer: "))
+                            if amount > card[2]:
+                                print("Not enough money!")
+                            else:
+                                dest_balance = get_balance(dest_card)
+                                dest_balance += amount
+                                new_balance = card[2] - amount
+                                set_balance(card_number, new_balance)
+                                set_balance(dest_card, dest_balance)
+                                print("Success!")
+                        else:
+                            print("Such a card does not exist.")
+                    elif choice == 4:
+                        close_account(card_number)
+                        print("The account has been closed!")
+                        break
+                    elif choice == 5:
                         print("You have successfully logged out!")
                         break
                     elif choice == 0:
