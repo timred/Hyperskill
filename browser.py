@@ -1,6 +1,8 @@
 import os
 import sys
 import re
+from collections import deque
+
 
 nytimes_com = '''
 This New Liquid Is Magnetic, and Mesmerizing
@@ -36,6 +38,7 @@ Twitter and Square Chief Executive Officer Jack Dorsey
  addressed Apple Inc. employees at the iPhone maker’s headquarters
  Tuesday, a signal of the strong ties between the Silicon Valley giants.
 '''
+history = deque()
 
 if __name__ == "__main__":
     save_dir = os.getcwd()
@@ -47,16 +50,27 @@ if __name__ == "__main__":
         os.mkdir(save_dir)
     except FileExistsError:
         pass
+    site = None
     while True:
+        current_page = site
         site = input()
         if site == "exit":
             break
 
+        if site == "back":
+            try:
+                site = history.pop()
+                if site is None:
+                    continue
+            except IndexError:
+                continue
+        else:
+            history.append(current_page)
+
         file_path = os.path.join(save_dir, site.split(".", 1)[0])
         if re.match(r"^.+\.", site):
-            site = site.replace(".", "_")
             try:
-                page = globals()[site]
+                page = globals()[site.replace(".", "_")]
                 print(page)
                 with open(file_path, "w") as file:
                     file.write(page)
