@@ -3,6 +3,7 @@ import sys
 import re
 import requests
 from collections import deque
+from bs4 import BeautifulSoup
 
 
 def get_page(url):
@@ -10,7 +11,16 @@ def get_page(url):
         url = "https://" + url
 
     response = requests.get(url)
-    return response.text
+    return response
+
+
+def parse_page(res):
+    text_page = []
+    soup = BeautifulSoup(res.content, "html.parser")
+    tags = ["p", "h1", "h2", "h3", "h4", "h5", "h6", "a", "ul", "ol", "li"]
+    for tag in soup.find_all(tags):
+        text_page.append(tag.text)
+    return "\n".join(text_page)
 
 
 history = deque()
@@ -45,9 +55,8 @@ if __name__ == "__main__":
         file_path = os.path.join(save_dir, site.split(".", 1)[0])
         if re.match(r"^.+\.", site):
             try:
-                # TODO: Request Page
-                # page = globals()[site.replace(".", "_")]
-                page = get_page(site)
+                res = get_page(site)
+                page = parse_page(res)
                 print(page)
                 with open(file_path, "w", encoding="utf-8") as file:
                     file.write(page)
