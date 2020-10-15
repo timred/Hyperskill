@@ -4,6 +4,7 @@ import re
 import requests
 from collections import deque
 from bs4 import BeautifulSoup
+from colorama import Fore
 
 
 def get_page(url):
@@ -19,7 +20,10 @@ def parse_page(res):
     soup = BeautifulSoup(res.content, "html.parser")
     tags = ["p", "h1", "h2", "h3", "h4", "h5", "h6", "a", "ul", "ol", "li"]
     for tag in soup.find_all(tags):
-        text_page.append(tag.text)
+        if tag.name == "a":
+            text_page.append(Fore.BLUE + tag.text)
+        else:
+            text_page.append(tag.text)
     return "\n".join(text_page)
 
 

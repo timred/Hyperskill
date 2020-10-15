@@ -5,3 +5,4 @@ Text-Based Browser from JetBrains Academy
 - Stage 3: Implement a Back button
 - Stage 4: Use requests library
 - Stage 5: Parsing Tags
+- Stage 6: Format links as BLUE
