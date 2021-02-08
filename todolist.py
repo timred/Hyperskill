@@ -1,6 +1,6 @@
 class Task:
-    def __init__(self, task):
-        self.task = task
+    def __init__(self, content):
+        self.task = content
 
     def __str__(self):
         return self.task
@@ -13,3 +13,4 @@ for i, task in enumerate(tasks):
 
 
 if __name__ == "__main__":
+    pass
