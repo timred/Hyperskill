@@ -13,4 +13,3 @@ for i, task in enumerate(tasks):
 
 
 if __name__ == "__main__":
-    pass
