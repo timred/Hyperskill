@@ -30,13 +30,17 @@ def menu():
     print("1) Today's tasks")
     print("2) Week's tasks")
     print("3) All tasks")
-    print("4) Add task")
+    print("4) Missed tasks")
+    print("5) Add task")
+    print("6) Delete task")
     print("0) Exit")
 
 
-def get_tasks(datetime_day=None):
-    if not datetime_day:
+def get_tasks(datetime_day=None, missed=False):
+    if not datetime_day and not missed:
         return session.query(Task).order_by(Task.deadline).all()
+    elif missed:
+        return session.query(Task).filter(Task.deadline < today.date()).order_by(Task.deadline).all()
     else:
         return session.query(Task).filter(Task.deadline == datetime_day.date()).all()
 
@@ -47,13 +51,20 @@ def add_tasks(content, deadline_time):
     session.commit()
 
 
-def print_tasks(tasks, all_tasks=False):
-    if tasks and not all_tasks:
+def delete_tasks(row):
+    session.delete(row)
+    session.commit()
+
+
+def print_tasks(tasks, numbered=False, missed=False):
+    if tasks and not numbered:
         for task in tasks:
             print(task.task)
-    elif tasks and all_tasks:
+    elif tasks and numbered:
         for task_number, task in enumerate(tasks):
             print(f"{task_number + 1}. {task.task}. {task.deadline.strftime('%d %b')}")
+    elif missed:
+        print("Nothing is missed!")
     else:
         print("Nothing to do!")
     print()
@@ -82,6 +93,11 @@ if __name__ == "__main__":
             print_tasks(rows, True)
         elif choice == 4:
             print()
+            print("Missed tasks:")
+            rows = get_tasks(missed=True)
+            print_tasks(rows, numbered=True)
+        elif choice == 5:
+            print()
             print("Enter task")
             task_desc = input()
             print("Enter deadline")
@@ -89,6 +105,14 @@ if __name__ == "__main__":
             add_tasks(task_desc, deadline)
             print("The task has been added!")
             print()
+        elif choice == 6:
+            print()
+            print("Choose the number of the task you want to delete:")
+            rows = get_tasks()
+            print_tasks(rows, numbered=True)
+            print("Choose the number of the task you want to delete:")
+            delete_tasks(rows[int(input())-1])
+            print("The task has been deleted!")
         elif choice == 0:
             print("Bye!")
             exit()
