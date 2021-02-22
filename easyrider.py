@@ -18,7 +18,7 @@ bus_schema = {
             "type": str,
             "required": True,
             "min_length": 1,
-            "regex": "^([A-Za-z][A-Za-z\s]+ ([Rr]oad|[Aa]venue|[Bb]oul{1,2}evard|[Ss]treet|St\.|Str\.|Av\.)|Elm)$"
+            "regex": "^[A-Z][A-Za-z\\s]+ (Road|Avenue|Boulevard|Street)$"
         },
         {
             "name": "next_stop",
@@ -63,7 +63,7 @@ def invalid_buses(buses):
                 if field["required"] or len(bus_field_value) > 0:
                     errors[field["name"]] += 1
                     continue
-            if "regex" in field.keys() and not re.match(field["regex"], bus_field_value):
+            if "regex" in field.keys() and re.match(field["regex"], bus_field_value) is None:
                 errors[field["name"]] += 1
                 continue
 
@@ -75,10 +75,22 @@ def invalid_buses(buses):
     return errors
 
 
+def print_type_required_validation(invalid_data):
+    print(f"Type and required field validation: {invalid_data['total']} errors")
+    for error, value in invalid_data.items():
+        if error != "total":
+            print(f"{error}: {value}")
+
+
+def print_format_validation(invalid_data):
+    format_fields = ["stop_name", "stop_type", "a_time"]
+    print(f"Format validation: {invalid_data['total']} errors")
+    for error, value in invalid_data.items():
+        if error != "total" and error in format_fields:
+            print(f"{error}: {value}")
+
+
 if __name__ == "__main__":
     easy_rider = json.loads(input())
     invalid = invalid_buses(easy_rider)
-    print(f"Type and required field validation: {invalid['total']} errors")
-    for error, value in invalid.items():
-        if error != "total":
-            print(f"{error}: {value}")
+    print_format_validation(invalid)
