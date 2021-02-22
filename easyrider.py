@@ -75,6 +75,16 @@ def invalid_buses(buses):
     return errors
 
 
+def parse_stops(buses):
+    bus_stops = dict()
+    for bus in buses:
+        try:
+            bus_stops[bus["bus_id"]].add(bus["stop_id"])
+        except KeyError:
+            bus_stops[bus["bus_id"]] = {bus["stop_id"]}
+    return bus_stops
+
+
 def print_type_required_validation(invalid_data):
     print(f"Type and required field validation: {invalid_data['total']} errors")
     for error, value in invalid_data.items():
@@ -90,7 +100,13 @@ def print_format_validation(invalid_data):
             print(f"{error}: {value}")
 
 
+def print_bus_stops(bus_stops):
+    print("Line names and number of stops:")
+    for bus, stops in bus_stops.items():
+        print(f"bus_id: {bus}, stops: {len(stops)}")
+
+
 if __name__ == "__main__":
     easy_rider = json.loads(input())
-    invalid = invalid_buses(easy_rider)
-    print_format_validation(invalid)
+    easy_rider_stops = parse_stops(easy_rider)
+    print_bus_stops(easy_rider_stops)
