@@ -157,13 +157,33 @@ def print_stop_types(stop_types, bus_stops):
     print(f"Finish stops: {len(stop_types['F'])} {sorted([bus_stops[stop] for stop in stop_types['F']])}")
 
 
+def invalid_times(buses):
+    return_value = False
+
+    bus_times = dict()
+    for bus in buses:
+        try:
+            bus_times[bus["bus_id"]].append(bus)
+        except KeyError:
+            bus_times[bus["bus_id"]] = [bus]
+
+    print("Arrival time test:")
+    for bus, detail in bus_times.items():
+        current_time = detail[0]["a_time"]
+        for stop in detail[1:]:
+            next_time = stop["a_time"]
+            if current_time >= next_time:
+                print(f"bus_id line {bus}: wrong time on station {stop['stop_name']}")
+                return_value = True
+                break
+            current_time = next_time
+
+    if not return_value:
+        print("OK")
+
+    return return_value
+
+
 if __name__ == "__main__":
     easy_rider = json.loads(input())
-    invalid = invalid_route(easy_rider)
-    if invalid:
-        print(f"There is no start or end stop for the line: {invalid}.")
-    else:
-        easy_rider_stops = stops(easy_rider)
-        easy_rider_types = parse_stop_types(easy_rider, easy_rider_stops)
-        print_stop_types(easy_rider_types, easy_rider_stops)
-
+    outcome = invalid_times(easy_rider)
