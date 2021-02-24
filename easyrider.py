@@ -186,4 +186,19 @@ def invalid_times(buses):
 
 if __name__ == "__main__":
     easy_rider = json.loads(input())
-    outcome = invalid_times(easy_rider)
+    easy_rider_stops = stops(easy_rider)
+    easy_rider_stop_types = parse_stop_types(easy_rider, easy_rider_stops)
+    print("On demand stops test:")
+    wrong_stops = set()
+    try:
+        on_demand = easy_rider_stop_types["O"]
+
+        for stop_type, stops in easy_rider_stop_types.items():
+            if stop_type != "O":
+                wrong_stops |= on_demand.intersection(stops)
+    except KeyError:
+        pass
+    if wrong_stops:
+        print(f"Wrong stop type: {sorted([easy_rider_stops[wrong_stop] for wrong_stop in wrong_stops])}")
+    else:
+        print("OK")
