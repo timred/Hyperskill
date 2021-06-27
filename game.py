@@ -1,41 +1,52 @@
 # Write your code here
 import numpy as np
+# from collections import deque
 
 
-def printer(array: np.array):
-    for row in array:
-        print(' '.join(row))
-    print()
+def cycle_left(n, mod):
+    if n % mod == 0:
+        return (n - 1) % mod + (n // mod) * mod
+    else:
+        return n - 1
+
+
+def cycle_right(n, mod):
+    if (n + 1) % mod == 0:
+        return (n + 1) % mod + (n // mod) * mod
+    else:
+        return n + 1
 
 
 class Piece:
 
-    def __init__(self, positions, debug=False):
-        self.positions = positions
+    def __init__(self, board, positions, debug=False):
+        self.positions = np.array(positions)
         self.start = positions[0]
+        self.board = board
         if debug:
             print(self.positions)
 
+    def __repr__(self):
+        return str(self.positions)
+
     def left(self):
-        pass
+        for i, position in enumerate(self.positions):
+            self.positions[i] = list(map(lambda x: cycle_left(x, mod=self.board.width), position))
 
     def right(self):
-        pass
+        for i, position in enumerate(self.positions):
+            self.positions[i] = list(map(lambda x: cycle_right(x, mod=self.board.width), position))
 
     def down(self):
-        pass
+        self.positions += self.board.width
 
     def rotate(self):
-        pass
+        self.positions = np.vstack((self.positions[1:], self.positions[0]))
 
-    # def print_positions(self, start=False):
-    #     for position in self.positions:
-    #         # grid = base_grid.copy()
-    #         for part in position:
-    #             grid[part // 4][part % 4] = "0"
-    #         printer(np.array(grid))
-    #         if start:
-    #             return
+    def out_of_bounds(self):
+        for position in self.positions:
+            if sum(position) > self.board.limit * 4:
+                return True
 
 
 class O(Piece):
@@ -44,7 +55,7 @@ class O(Piece):
         # positions = [[4, 14, 15, 5]]
         positions = [[board.mid_point + board.width * i for i in range(2)]
                      + [board.mid_point + board.width * i + 1 for i in range(2)]]
-        super().__init__(positions, debug)
+        super().__init__(board, positions, debug)
 
 
 class I(Piece):
@@ -53,7 +64,7 @@ class I(Piece):
         # positions = [[4, 14, 24, 34], [3, 4, 5, 6]]
         positions = [[board.mid_point + board.width * i for i in range(4)],
                      [board.mid_point - 1 + i for i in range(4)]]
-        super().__init__(positions, debug)
+        super().__init__(board, positions, debug)
 
 
 class S(Piece):
@@ -64,7 +75,7 @@ class S(Piece):
                      + [board.mid_point + board.width - i for i in range(2)],
                      [board.mid_point + board.width * i for i in range(2)]
                      + [board.mid_point + 1 + board.width * (i + 1) for i in range(2)]]
-        super().__init__(positions, debug)
+        super().__init__(board, positions, debug)
 
 
 class Z(Piece):
@@ -75,7 +86,7 @@ class Z(Piece):
                      + [board.mid_point + 1 + board.width + i for i in range(2)],
                      [board.mid_point + 1 + board.width * i for i in range(2)]
                      + [board.mid_point + board.width * (i + 1) for i in range(2)]]
-        super().__init__(positions, debug)
+        super().__init__(board, positions, debug)
 
 
 class L(Piece):
@@ -86,7 +97,7 @@ class L(Piece):
                      [board.mid_point - 1 + board.width + i for i in range(3)] + [board.mid_point + 1],
                      [board.mid_point + i for i in range(2)] + [(board.width - 1) // 2 + 1 + board.width * (i + 1) for i in range(2)],
                      [board.mid_point + i for i in range(3)] + [(board.width - 1) // 2 + board.width]]
-        super().__init__(positions, debug)
+        super().__init__(board, positions, debug)
 
 
 class J(Piece):
@@ -97,7 +108,7 @@ class J(Piece):
                      [board.mid_point - 1 + i for i in range(3)] + [board.mid_point + 1 + board.width],
                      [board.mid_point + 1] + [board.mid_point + board.width * i for i in range(3)],
                      [board.mid_point] + [board.mid_point + board.width + i for i in range(3)]]
-        super().__init__(positions, debug)
+        super().__init__(board, positions, debug)
 
 
 class T(Piece):
@@ -108,7 +119,7 @@ class T(Piece):
                      [board.mid_point] + [board.mid_point - 1 + board.width + i for i in range(3)],
                      [board.mid_point + 1 + board.width * i for i in range(3)] + [board.mid_point + board.width],
                      [board.mid_point + i for i in range(3)] + [board.mid_point + 1 + board.width]]
-        super().__init__(positions, debug)
+        super().__init__(board, positions, debug)
 
 
 class Board:
@@ -118,11 +129,13 @@ class Board:
             height = width
         self.width = width
         self.height = height
+        self.limit = width * height
         self.mid_point = (self.width - 1) // 2
         self.board = np.full((self.height, self.width), "-")
         self.pieces = []
 
     def __repr__(self):
+        self.redraw()
         board_str = ''
         for row in self.board:
             board_str += ' '.join(row)
@@ -131,30 +144,65 @@ class Board:
 
     def add_piece(self, piece: Piece):
         self.pieces.append(piece)
-        for part in piece.start:
-            self.board[part // self.width][part % self.width] = "0"
 
+    def redraw(self):
+        self.board = np.full((self.height, self.width), "-")
+        self.clean_pieces()
+        for piece in self.pieces:
+            for part in piece.positions[0]:
+                if part >= self.limit:
+                    continue
+                self.board[part // self.width][part % self.width] = "0"
 
-def main():
-    pass
+    def clean_pieces(self):
+        for i, piece in enumerate(self.pieces):
+            if piece.out_of_bounds():
+                del self.pieces[i]
 
 
 if __name__ == "__main__":
-    # main()
-    tetris_board = Board(10, 20)
-    print(tetris_board)
-    i_piece = I(tetris_board)
-    o_piece = O(tetris_board)
-    s_piece = S(tetris_board)
-    z_piece = Z(tetris_board)
-    l_piece = L(tetris_board)
-    j_piece = J(tetris_board)
-    t_piece = T(tetris_board, debug=True)
-    # tetris_board.add_piece(i_piece)
-    # tetris_board.add_piece(o_piece)
-    # tetris_board.add_piece(s_piece)
-    # tetris_board.add_piece(z_piece)
-    # tetris_board.add_piece(l_piece)
-    # tetris_board.add_piece(j_piece)
-    tetris_board.add_piece(t_piece)
-    print(tetris_board)
+    user_pieces = []
+    user_boards = []
+    user_piece = None
+    tetris_board = None
+
+    while True:
+        user_input = input()
+        if user_input in ['O', 'I', 'S', 'Z', 'L', 'J', 'T']:
+            user_pieces.append(user_input)
+        if len(user_input.split()) > 1:
+            tetris_board = Board(int(user_input.split()[0]), int(user_input.split()[1]))
+            print(tetris_board)
+
+            pieces = {
+                'O': O(tetris_board),
+                'I': I(tetris_board),
+                'S': S(tetris_board),
+                'Z': Z(tetris_board),
+                'L': L(tetris_board),
+                'J': J(tetris_board),
+                'T': T(tetris_board)
+            }
+
+            user_piece = pieces[user_pieces.pop()]
+            tetris_board.add_piece(user_piece)
+            print(tetris_board)
+
+        if user_input == 'left':
+            user_piece.down()
+            user_piece.left()
+            print(tetris_board)
+        if user_input == 'right':
+            user_piece.down()
+            user_piece.right()
+            print(tetris_board)
+        if user_input == 'rotate':
+            user_piece.down()
+            user_piece.rotate()
+            print(tetris_board)
+        if user_input == 'down':
+            user_piece.down()
+            print(tetris_board)
+
+        if user_input == 'exit':
+            break
