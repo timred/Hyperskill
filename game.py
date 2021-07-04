@@ -23,6 +23,7 @@ class Piece:
         self.positions = np.array(positions)
         self.start = positions[0]
         self.board = board
+        self.static = False
         if debug:
             print(self.positions)
 
@@ -30,17 +31,33 @@ class Piece:
         return str(self.positions)
 
     def left(self):
-        for i, position in enumerate(self.positions):
-            self.positions[i] = list(map(lambda x: cycle_left(x, mod=self.board.width), position))
+        if self.static:
+            return
+        for part in self.positions[0]:
+            if part % self.board.width == 0:
+                return
+        self.positions -= 1
 
     def right(self):
-        for i, position in enumerate(self.positions):
-            self.positions[i] = list(map(lambda x: cycle_right(x, mod=self.board.width), position))
+        if self.static:
+            return
+        for part in self.positions[0]:
+            if (part + 1) % self.board.width == 0:
+                return
+        self.positions += 1
 
     def down(self):
+        if self.static:
+            return
         self.positions += self.board.width
+        for part in self.positions[0]:
+            if part in self.board.floor:
+                self.static = True
+                return
 
     def rotate(self):
+        if self.static:
+            return
         self.positions = np.vstack((self.positions[1:], self.positions[0]))
 
     def out_of_bounds(self):
@@ -130,6 +147,7 @@ class Board:
         self.width = width
         self.height = height
         self.limit = width * height
+        self.floor = [self.limit - 1 - i for i in range(self.width)]
         self.mid_point = (self.width - 1) // 2
         self.board = np.full((self.height, self.width), "-")
         self.pieces = []
@@ -168,8 +186,8 @@ if __name__ == "__main__":
 
     while True:
         user_input = input()
-        if user_input in ['O', 'I', 'S', 'Z', 'L', 'J', 'T']:
-            user_pieces.append(user_input)
+        if user_input.upper() in ['O', 'I', 'S', 'Z', 'L', 'J', 'T']:
+            user_pieces.append(user_input.upper())
         if len(user_input.split()) > 1:
             tetris_board = Board(int(user_input.split()[0]), int(user_input.split()[1]))
             print(tetris_board)
@@ -188,19 +206,19 @@ if __name__ == "__main__":
             tetris_board.add_piece(user_piece)
             print(tetris_board)
 
-        if user_input == 'left':
-            user_piece.down()
+        if user_input.lower() == 'left':
             user_piece.left()
-            print(tetris_board)
-        if user_input == 'right':
             user_piece.down()
+            print(tetris_board)
+        if user_input.lower() == 'right':
             user_piece.right()
-            print(tetris_board)
-        if user_input == 'rotate':
             user_piece.down()
-            user_piece.rotate()
             print(tetris_board)
-        if user_input == 'down':
+        if user_input.lower() == 'rotate':
+            user_piece.rotate()
+            user_piece.down()
+            print(tetris_board)
+        if user_input.lower() == 'down':
             user_piece.down()
             print(tetris_board)
 
