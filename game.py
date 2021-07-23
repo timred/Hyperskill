@@ -46,8 +46,8 @@ class Piece:
                 return
         self.positions += 1
 
-    def down(self):
-        if self.static:
+    def down(self, lowering=False):
+        if self.static and not lowering:
             return
         self.positions += self.board.width
         for part in self.positions[0]:
@@ -61,9 +61,19 @@ class Piece:
         self.positions = np.vstack((self.positions[1:], self.positions[0]))
 
     def out_of_bounds(self):
-        for position in self.positions:
-            if sum(position) > self.board.limit * 4:
+        for part in self.positions[0]:
+            if part > self.board.limit * 4:
                 return True
+
+    def collided(self):
+        current_position = self.positions[0]
+        for element in current_position:
+            for other_piece in self.board.pieces:
+                if id(self) == id(other_piece):
+                    continue
+                if element + self.board.width in other_piece.positions[0]:
+                    self.static = True
+                    return True
 
 
 class O(Piece):
@@ -172,10 +182,36 @@ class Board:
                     continue
                 self.board[part // self.width][part % self.width] = "0"
 
+    # TODO: Remove clean_pieces
     def clean_pieces(self):
         for i, piece in enumerate(self.pieces):
             if piece.out_of_bounds():
                 del self.pieces[i]
+
+    def lower_pieces(self):
+        for piece in self.pieces:
+            piece.down(lowering=True)
+
+    def completed_row(self):
+        for i, row in enumerate(self.board):
+            if "-" not in row:
+                return i
+        return False
+
+    def clear_row(self, i):
+        parts = [i * self.width + j for j in range(self.width)]
+        for piece in self.pieces:
+            if piece.static:
+                for i, part in enumerate(piece.positions[0]):
+                    if part in parts:
+                        piece.positions[0][i] = self.limit
+
+    def game_over(self):
+        for piece in self.pieces:
+            if not piece.static:
+                return False
+        if "O" in self.board[0]:
+            return True
 
 
 if __name__ == "__main__":
@@ -186,11 +222,14 @@ if __name__ == "__main__":
 
     while True:
         user_input = input()
-        if user_input.upper() in ['O', 'I', 'S', 'Z', 'L', 'J', 'T']:
-            user_pieces.append(user_input.upper())
+        if user_input == 'exit':
+            break
+
         if len(user_input.split()) > 1:
             tetris_board = Board(int(user_input.split()[0]), int(user_input.split()[1]))
             print(tetris_board)
+
+        if tetris_board:
 
             pieces = {
                 'O': O(tetris_board),
@@ -202,25 +241,38 @@ if __name__ == "__main__":
                 'T': T(tetris_board)
             }
 
-            user_piece = pieces[user_pieces.pop()]
-            tetris_board.add_piece(user_piece)
+            if user_input == 'piece':
+                piece_input = input()
+                if piece_input.upper() in ['O', 'I', 'S', 'Z', 'L', 'J', 'T']:
+                    user_pieces.append(piece_input.upper())
+
+            if len(user_pieces) > 0:
+                user_piece = pieces[user_pieces.pop()]
+                tetris_board.add_piece(user_piece)
+
+            if user_input.lower() == 'left':
+                user_piece.left()
+                user_piece.down()
+                user_piece.collided()
+            if user_input.lower() == 'right':
+                user_piece.right()
+                user_piece.down()
+                user_piece.collided()
+            if user_input.lower() == 'rotate':
+                user_piece.rotate()
+                user_piece.down()
+                user_piece.collided()
+            if user_input.lower() == 'down':
+                user_piece.collided()
+                user_piece.down()
+
+            completed_row = tetris_board.completed_row()
+            if completed_row > 0:
+                tetris_board.clear_row(completed_row)
+
             print(tetris_board)
 
-        if user_input.lower() == 'left':
-            user_piece.left()
-            user_piece.down()
-            print(tetris_board)
-        if user_input.lower() == 'right':
-            user_piece.right()
-            user_piece.down()
-            print(tetris_board)
-        if user_input.lower() == 'rotate':
-            user_piece.rotate()
-            user_piece.down()
-            print(tetris_board)
-        if user_input.lower() == 'down':
-            user_piece.down()
-            print(tetris_board)
-
-        if user_input == 'exit':
-            break
+            if tetris_board.game_over():
+                # TODO: Check Game Over works and prints
+                print("Game Over!")
+                break
