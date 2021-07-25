@@ -62,8 +62,9 @@ class Piece:
 
     def out_of_bounds(self):
         for part in self.positions[0]:
-            if part > self.board.limit * 4:
-                return True
+            if part < self.board.limit:
+                return False
+        return True
 
     def collided(self):
         current_position = self.positions[0]
@@ -188,9 +189,11 @@ class Board:
             if piece.out_of_bounds():
                 del self.pieces[i]
 
-    def lower_pieces(self):
+    def lower_pieces(self, above):
         for piece in self.pieces:
-            piece.down(lowering=True)
+            for part in piece.positions[0]:
+                if part < above * self.width:
+                    piece.down(lowering=True)
 
     def completed_row(self):
         for i, row in enumerate(self.board):
@@ -205,12 +208,13 @@ class Board:
                 for i, part in enumerate(piece.positions[0]):
                     if part in parts:
                         piece.positions[0][i] = self.limit
+        self.redraw()
 
     def game_over(self):
         for piece in self.pieces:
             if not piece.static:
                 return False
-        if "O" in self.board[0]:
+        if "0" in self.board[0]:
             return True
 
 
@@ -227,7 +231,6 @@ if __name__ == "__main__":
 
         if len(user_input.split()) > 1:
             tetris_board = Board(int(user_input.split()[0]), int(user_input.split()[1]))
-            print(tetris_board)
 
         if tetris_board:
 
@@ -266,13 +269,16 @@ if __name__ == "__main__":
                 user_piece.collided()
                 user_piece.down()
 
-            completed_row = tetris_board.completed_row()
-            if completed_row > 0:
-                tetris_board.clear_row(completed_row)
+            if user_input == 'break':
+                completed_row = tetris_board.completed_row()
+                for _ in range(tetris_board.height):
+                    if completed_row and completed_row > 0:
+                        tetris_board.clear_row(completed_row)
+                        tetris_board.lower_pieces(above=completed_row)
+                        completed_row = tetris_board.completed_row()
 
             print(tetris_board)
 
             if tetris_board.game_over():
-                # TODO: Check Game Over works and prints
                 print("Game Over!")
                 break
