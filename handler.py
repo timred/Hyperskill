@@ -85,31 +85,69 @@ class FileSorter:
                 if self.file_type == "" or self.file_type == file_extension[1:]:
                     file_dict[file_size].append(file_name)
 
-        return file_dict
+        return Files(file_dict)
 
 
-def check_duplicates(file_dict):
-    hash_dict = dict()
-    for size, files in file_dict.items():
-        hash_list = defaultdict(list)
-        for file_name in files:
-            hash_list[md5(file_name)].append(file_name)
-        hash_dict[size] = hash_list
-    return hash_dict
+class Files:
+
+    def check_duplicates(self):
+        hash_dict = dict()
+        for size, files in self.file_dict.items():
+            hash_list = defaultdict(list)
+            for file_name in files:
+                hash_list[md5(file_name)].append(file_name)
+            hash_dict[size] = hash_list
+        return hash_dict
+
+    def __init__(self, file_dict):
+        self.file_dict = file_dict
+        self.hash_dict = self.check_duplicates()
+        self.id_duplicate = defaultdict(dict)
+
+    def print_duplicates(self, sizes):
+        i = 1
+        for size in sizes:
+            print(f"{size} bytes")
+            for md5_hash, files in self.hash_dict[size].items():
+                if len(files) == 1:
+                    continue
+                print(f"Hash: {md5_hash}")
+                for file in files:
+                    self.id_duplicate[i] = {"file": file, "size": size}
+                    print(f"{i}. {file}")
+                    i += 1
+            print()
+
+    def delete(self, ids: list[int]):
+        freed = 0
+        for i in ids:
+            os.remove(self.id_duplicate[i]["file"])
+            freed += self.id_duplicate[i]["size"]
+        return freed
 
 
-def print_duplicates(sizes, hash_dict):
-    i = 1
-    for key in sizes:
-        print(f"{key} bytes")
-        for md5_hash, files in hash_dict[key].items():
-            if len(files) == 1:
-                continue
-            print(f"Hash: {md5_hash}")
-            for file in files:
-                print(f"{i}. {file}")
-                i += 1
-        print()
+def yes_no(question):
+    while True:
+        user_input = input(f"{question}\n")
+        if user_input == 'yes':
+            return True
+        elif user_input == 'no':
+            return False
+        else:
+            print("Wrong option")
+
+
+def numbers_list(question):
+    while True:
+        file_numbers_str = input(f"{question}\n").strip().split()
+        try:
+            file_numbers = [int(n) for n in file_numbers_str]
+            if len(file_numbers) > 0:
+                return file_numbers
+            else:
+                print("Wrong format")
+        except ValueError:
+            print("Wrong format")
 
 
 def main():
@@ -120,27 +158,20 @@ def main():
         my_files = file_sorter.os_walk(args.path)
         sort_type = file_sorter.sorting_option
 
-        sorted_keys = sort_type.sort(my_files)
+        sorted_keys = sort_type.sort(my_files.file_dict)
         for key in sorted_keys:
             print(f"{key} bytes")
-            for file in my_files[key]:
+            for file in my_files.file_dict[key]:
                 print(file)
             print()
 
-        while True:
-            user_input = input("Check for duplicates?\n")
-            if user_input == 'yes':
-                duplicate_check = True
-                break
-            elif user_input == 'no':
-                duplicate_check = False
-                break
-            else:
-                print("Wrong option")
+        if yes_no("Check for duplicates?"):
+            my_files.print_duplicates(sorted_keys)
 
-        if duplicate_check:
-            duplicate_dict = check_duplicates(my_files)
-            print_duplicates(sorted_keys, duplicate_dict)
+        if yes_no("Delete files?"):
+            file_numbers = numbers_list("Enter file numbers to delete:")
+            freed = my_files.delete(file_numbers)
+            print(f"Total freed up space: {freed} bytes")
 
     else:
         print("Directory is not specified")
