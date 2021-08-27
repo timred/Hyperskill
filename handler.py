@@ -1,6 +1,7 @@
 import os
 import argparse
 from collections import defaultdict
+import hashlib
 
 
 def parse_args():
@@ -14,6 +15,14 @@ def valid_args(argparse_args):
         return True
     else:
         return False
+
+
+def md5(file_name):
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 
 class Descending:
@@ -79,7 +88,31 @@ class FileSorter:
         return file_dict
 
 
-if __name__ == '__main__':
+def check_duplicates(file_dict):
+    hash_dict = dict()
+    for size, files in file_dict.items():
+        hash_list = defaultdict(list)
+        for file_name in files:
+            hash_list[md5(file_name)].append(file_name)
+        hash_dict[size] = hash_list
+    return hash_dict
+
+
+def print_duplicates(sizes, hash_dict):
+    i = 1
+    for key in sizes:
+        print(f"{key} bytes")
+        for md5_hash, files in hash_dict[key].items():
+            if len(files) == 1:
+                continue
+            print(f"Hash: {md5_hash}")
+            for file in files:
+                print(f"{i}. {file}")
+                i += 1
+        print()
+
+
+def main():
     args = parse_args()
     if valid_args(args):
         file_sorter = FileSorter()
@@ -94,5 +127,24 @@ if __name__ == '__main__':
                 print(file)
             print()
 
+        while True:
+            user_input = input("Check for duplicates?\n")
+            if user_input == 'yes':
+                duplicate_check = True
+                break
+            elif user_input == 'no':
+                duplicate_check = False
+                break
+            else:
+                print("Wrong option")
+
+        if duplicate_check:
+            duplicate_dict = check_duplicates(my_files)
+            print_duplicates(sorted_keys, duplicate_dict)
+
     else:
         print("Directory is not specified")
+
+
+if __name__ == '__main__':
+    main()
