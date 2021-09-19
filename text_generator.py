@@ -13,6 +13,7 @@ class Tokenizer:
         self.total = len(self.token_list)
         self.total_unique = len(self.token_unique)
         self.bigram_list = self.__bigram_list()
+        self.markov_dict = self.__markov_dict()
         self.total_bigram = len(self.bigram_list)
 
     def __token_list(self):
@@ -41,11 +42,24 @@ class Tokenizer:
             bigram_list.append((self.token_list[i], self.token_list[i + 1]))
         return bigram_list
 
+    def __markov_dict(self):
+        markov_dict = dict()
+        for bigram in self.bigram_list:
+            head = bigram[0]
+            tail = bigram[1]
+            markov_dict.setdefault(head, {tail: 0})
+            markov_dict[head].setdefault(tail, 0)
+            markov_dict[head][tail] += 1
+        return markov_dict
+
     def get_token(self, i: int):
         return self.token_list[i]
 
     def get_bigram(self, i: int):
         return self.bigram_list[i]
+
+    def get_markov(self, head: str):
+        return self.markov_dict[head]
 
 
 class Printer:
@@ -64,6 +78,12 @@ class Printer:
     def bigram(self, i: int):
         bigram = self.tokenizer.get_bigram(i)
         print(f"Head: {bigram[0]}\tTail: {bigram[1]}")
+
+    def markov(self, head: str):
+        tails = self.tokenizer.get_markov(head)
+        print(f"Head: {head}")
+        for tail, count in tails.items():
+            print(f"Tail: {tail}\tCount: {count}")
 
 
 def corpus(tokenizer: Tokenizer, printer: Printer) -> None:
@@ -100,6 +120,19 @@ def bigrams(printer: Printer) -> None:
             print("Type Error. Please input an integer.")
 
 
+def markov(printer: Printer) -> None:
+
+    while True:
+        user_input = input()
+        if user_input == "exit":
+            break
+        try:
+            head = str(user_input)
+            printer.markov(head)
+        except KeyError:
+            print("Key Error. The requested word is not in the model. Please input another word.")
+
+
 def main():
     my_tokenizer = Tokenizer()
     printer = Printer(my_tokenizer)
@@ -108,7 +141,10 @@ def main():
     # corpus(my_tokenizer, printer)
 
     # Stage 2: Break into bigrams
-    bigrams(printer)
+    # bigrams(printer)
+
+    # Stage 3: Create a Markov Chain model
+    markov(printer)
 
 
 if __name__ == '__main__':
