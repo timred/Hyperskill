@@ -1,3 +1,7 @@
+# Ignore Downloaded pages
+default/
+
+>>>>>>> Text-BasedBrowser/main
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
