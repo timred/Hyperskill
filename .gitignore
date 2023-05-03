@@ -1,6 +1,9 @@
 # Ignore Downloaded pages
 default/
 
+# Database Files
+*.s3db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
