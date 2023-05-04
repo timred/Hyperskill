@@ -4,6 +4,9 @@ default/
 # Database Files
 *.s3db
 
+# Jetbrains Academy
+tests.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
